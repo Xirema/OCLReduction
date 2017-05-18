@@ -11,21 +11,42 @@
 
 #include "CL Reduction.h"
 
+cl::Device choose_device() {
+	std::vector<cl::Device> all_devices;
+	std::vector<cl::Platform> platforms;
+	cl::Platform.get(&platforms);
+	for(cl::Platform const& platform : platforms) {
+		std::vector<cl::Device> devices;
+		platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
+		all_devices.insert(all_devices.end(), devices.begin(), devices.end());
+	}
+	
+	std::cout << "Select which Device to use: " << std::endl;
+	for(size_t i = 0; i < all_devices.size(); i++) {
+		cl::Device const& device = all_devices[i];
+		std::cout << i;
+		std::cout << ": ";
+		std::cout << device.getInfo<CL_DEVICE_NAME>();
+		std::cout << " (";
+		std::cout << cl::Platform{device.getInfo<CL_DEVICE_PLATFORM>()}.getInfo<CL_PLATFORM_NAME>();
+		std::cout << " - ";
+		std::cout << device.getInfo<CL_DEVICE_VERSION>();
+		std::cout << ")";
+		std::cout << std::endl;
+	}
+	size_t chosen;
+	std::cin >> chosen;
+	return all_devices[chosen];
+}
+
 int main() {
 	using type = float;
 	using reduction_type = cl_reduction_type::reduction_type<cl_reduction_type::type::maximum>;
 	using datatype = cl_datatype::datatype<type>;
 	using context_t = cl_reduction::reduction_context<datatype, reduction_type>;
 	std::ofstream err_log{ "err.txt" };
-	std::vector<cl::Platform> platforms;
-	cl::Platform::get(&platforms);
-	std::vector<cl::Device> our_devices;
-	std::vector<cl::Device> devices;
-	platforms[0].getDevices(CL_DEVICE_TYPE_ALL, &devices);
-	devices.erase(devices.begin() + 2, devices.end());
-	our_devices.insert(our_devices.end(), devices.begin(), devices.end());
-	platforms[1].getDevices(CL_DEVICE_TYPE_ALL, &devices);
-	our_devices.insert(our_devices.end(), devices.begin(), devices.end());
+	
+	cl::Device device = choose_device();
 
 	try {
 		cl_reduction::reduction_context<datatype, reduction_type> context{ {our_devices.back()}, err_log };
