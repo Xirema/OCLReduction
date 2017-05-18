@@ -49,7 +49,7 @@ int main() {
 	cl::Device device = choose_device();
 
 	try {
-		cl_reduction::reduction_context<datatype, reduction_type> context{ {our_devices.back()}, err_log };
+		cl_reduction::reduction_context<datatype, reduction_type> context{ {device}, err_log };
 		std::vector<type> values;
 		auto last_ping = std::chrono::steady_clock::now();
 		std::default_random_engine engine{ std::random_device{}() };
